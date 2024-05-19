@@ -26,11 +26,20 @@ class SceneMain extends Phaser.Scene {
       frameWidth: 180,
       frameHeight: 180,
     });
+    // skeleton enemy
+    this.load.spritesheet("skeletonEnemyIdle", "content/enemy/skeleton/idle.png", {
+      frameWidth: 180,
+      frameHeight: 180,
+    });
 
     //this.load.image("playerIdle", "content/player/idle.png");
   }
 
   create() {
+
+    const cameraBounds = this.cameras.main.getBounds();
+
+
     this.clock = this.time.addEvent({
       delay: 2000, // 2000 milliseconds = 2 seconds
       callback: this.playerAttack,
@@ -104,6 +113,7 @@ class SceneMain extends Phaser.Scene {
       }),
     });
 
+
     this.anims.create({
       key: "heavyAttack",
       frames: this.anims.generateFrameNumbers("playerHeavyAttack", {
@@ -116,6 +126,30 @@ class SceneMain extends Phaser.Scene {
 
     this.cameras.main.startFollow(this.player);
     //this.player.setCollideWorldBounds(true);
+
+
+    //setup skeleton enemy
+    this.anims.create({
+      key: "skeletonIdle",
+      frames: this.anims.generateFrameNumbers("skeletonEnemyIdle", {
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 12,
+      repeat: -1,
+    });
+
+    this.time.addEvent({
+      delay: 1000,
+      callback: this.spawnEnemy,
+      callbackScope: this,
+      loop: true
+    });
+  }
+
+  spawnEnemy() {
+    const camera = this.cameras.main;
+    const cameraBounds = camera.worldView;
   }
 
   getChunk(x, y) {
