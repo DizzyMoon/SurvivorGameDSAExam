@@ -1,67 +1,77 @@
+import PlayerStats from "./player/player-stats.js";
+import SkeletonEnemy from "./enemy/skeletonEnemy.js";
+import { Chunk, Tile } from "./entities.js";
+
 class SceneMain extends Phaser.Scene {
   constructor() {
     super({ key: "SceneMain" });
     this.isAttacking = false;
-    this.EnemyList = [];
+    this.enemyList = [];
     this.player;
+    this.enemyCollisionGroup;
+    this.hitboxCollisionGroup;
+    this.playerStats = new PlayerStats();
+    //this.attackCooldown = false; // Initialize attack cooldown flag
+    this.attackCooldownDuration = 1000;
   }
 
   calculateEnemySpawningPoints(numPoints) {
-     // Clear previous spawning points container
-     if (this.enemySpawningPointsContainer) {
+    // Clear previous spawning points container
+    if (this.enemySpawningPointsContainer) {
       this.enemySpawningPointsContainer.destroy();
-  }
+    }
 
-  // Create a new container for spawning points
-  this.enemySpawningPointsContainer = this.add.container().setDepth(10);
+    // Create a new container for spawning points
+    this.enemySpawningPointsContainer = this.add.container().setDepth(10);
 
-  // Get the camera's world view
-  const cameraView = this.cameras.main.worldView;
+    // Get the camera's world view
+    const cameraView = this.cameras.main.worldView;
 
-  // Calculate positions just outside the camera view for spawning points
-  const padding = 50; // Padding to ensure enemies spawn just outside the camera view
-  const horizontalSpacing = (cameraView.width - padding * 2) / (numPoints - 1);
-  const verticalSpacing = (cameraView.height - padding * 2) / (numPoints - 1);
+    // Calculate positions just outside the camera view for spawning points
+    const padding = 50; // Padding to ensure enemies spawn just outside the camera view
+    const horizontalSpacing =
+      (cameraView.width - padding * 2) / (numPoints - 1);
+    const verticalSpacing = (cameraView.height - padding * 2) / (numPoints - 1);
 
-  // Function to create spawning points and corresponding dots
-  const createPoint = (x, y) => {
-    // Create a container for the point
-    const pointContainer = this.add.container(x, y).setDepth(10);
-    
-    // Create the red dot as a child of the point container
-    const dot = this.add.circle(0, 0, 3, 0xff0000); // Relative position to the point
-    pointContainer.add(dot); // Add dot as a child of the point container
-    
-    // Add the point container to the main container
-    this.enemySpawningPointsContainer.add(pointContainer); // Add point container to the main container
-};
-  // Bottom Edge
-  for (let i = 0; i < numPoints; i++) {
+    // Function to create spawning points and corresponding dots
+    const createPoint = (x, y) => {
+      // Create a container for the point
+      const pointContainer = this.add.container(x, y).setDepth(10);
+
+      // Create the red dot as a child of the point container
+      const dot = this.add.circle(0, 0, 3, 0xff0000); // Relative position to the point
+      pointContainer.add(dot); // Add dot as a child of the point container
+
+      // Add the point container to the main container
+      this.enemySpawningPointsContainer.add(pointContainer); // Add point container to the main container
+    };
+    // Bottom Edge
+    for (let i = 0; i < numPoints; i++) {
       const x = cameraView.left + padding + i * horizontalSpacing;
       const y = cameraView.bottom + padding;
       createPoint(x, y);
-  }
+    }
 
-  // Right Edge
-  for (let i = 0; i < numPoints; i++) {
+    // Right Edge
+    for (let i = 0; i < numPoints; i++) {
       const x = cameraView.right + padding;
       const y = cameraView.top + padding + i * verticalSpacing;
       createPoint(x, y);
-  }
+    }
 
-  // Top Edge
-  for (let i = 0; i < numPoints; i++) {
+    // Top Edge
+    for (let i = 0; i < numPoints; i++) {
       const x = cameraView.right - padding - i * horizontalSpacing;
       const y = cameraView.top - padding;
       createPoint(x, y);
-  }
+    }
 
-  // Left Edge
-  for (let i = 0; i < numPoints; i++) {
+    // Left Edge
+    for (let i = 0; i < numPoints; i++) {
       const x = cameraView.left - padding;
       const y = cameraView.bottom - padding - i * verticalSpacing;
       createPoint(x, y);
-  }
+    }
   }
 
   preload() {
@@ -87,15 +97,73 @@ class SceneMain extends Phaser.Scene {
       frameHeight: 180,
     });
     // skeleton enemy
-    this.load.spritesheet("skeletonEnemyIdle", "content/enemy/skeleton/idle.png", {
-      frameWidth: 150,
-      frameHeight: 150,
-    });
+    this.load.spritesheet(
+      "skeletonEnemyIdle",
+      "content/enemy/skeleton/idle.png",
+      {
+        frameWidth: 150,
+        frameHeight: 150,
+      }
+    );
+
+    this.load.spritesheet(
+      "skeletonEnemyDeath",
+      "content/enemy/skeleton/death.png",
+      {
+        frameWidth: 150,
+        frameHeight: 150,
+      }
+    );
+
+    this.load.spritesheet(
+      "skeletonEnemyHit",
+      "content/enemy/skeleton/Take Hit.png",
+      {
+        frameWidth: 150,
+        frameHeight: 150,
+      }
+    );
 
     //this.load.image("playerIdle", "content/player/idle.png");
   }
 
+  killEnemy(enemy) {}
+
+  hitEnemy(player, enemy) {
+    if (enemy.stunned || !this.isAttacking) {
+      // If attack is on cooldown or player is not attacking, return early
+      return;
+    }
+
+    console.log();
+
+    // Perform attack logic...
+    this.playAnimation(enemy, "skeletonEnemyHit");
+    enemy.health -= 3;
+
+    // Start attack cooldown
+    enemy.stunned = true;
+    this.time.delayedCall(this.attackCooldownDuration, () => {
+      enemy.stunned = false; // Reset attack cooldown flag
+    });
+
+    if (enemy.health <= 0) {
+      // Enemy defeated
+      this.playAnimation(enemy, "skeletonEnemyDeath");
+      Phaser.Utils.Array.Remove(this.enemyList, enemy);
+    } else {
+      // Enemy still alive
+      this.time.delayedCall(500, () => {
+        this.playAnimation(enemy, "skeletonEnemyIdle");
+      });
+    }
+  }
+
   create() {
+    //this.physics.world.debugDrawBody = true;
+
+    this.enemyCollisionGroup = this.physics.add.group();
+
     this.cameraBounds = this.cameras.main.getBounds();
 
     // Define an array to store enemy spawning points
@@ -130,8 +198,8 @@ class SceneMain extends Phaser.Scene {
 
     this.chunkSize = 16;
     this.tileSize = 16;
-    this.playerSpeed = 2;
-    this.enemySpeed = 0.7;
+    //this.playerSpeed = 2;
+    this.enemySpeed = 0.2;
 
     this.cameras.main.setZoom(1);
 
@@ -155,7 +223,21 @@ class SceneMain extends Phaser.Scene {
     this.player.setDepth(10);
 
     //Setup player attack hitbox
-    //this.hitbox = this.physics.add.sprite(this.player.x + 20, this.player.y, "content/player/hitbox.png");
+    this.hitbox = this.physics.add
+      .sprite(this.player.x + 20, this.player.y, "content/player/hitbox.png")
+      .setSize(50, 50);
+    //this.hitbox.setVisible(false);
+
+    this.hitboxCollisionGroup = this.physics.add.group();
+    this.hitboxCollisionGroup.add(this.hitbox);
+
+    this.physics.add.overlap(
+      this.hitbox,
+      this.enemyList,
+      this.hitEnemy,
+      null,
+      this
+    );
 
     this.anims.create({
       key: "playerIdle",
@@ -185,7 +267,6 @@ class SceneMain extends Phaser.Scene {
       }),
     });
 
-
     this.anims.create({
       key: "heavyAttack",
       frames: this.anims.generateFrameNumbers("playerHeavyAttack", {
@@ -194,11 +275,26 @@ class SceneMain extends Phaser.Scene {
       }),
     });
 
+    this.anims.create({
+      key: "skeletonEnemyHit",
+      frames: this.anims.generateFrameNumbers("skeletonEnemyHit", {
+        start: 0,
+        end: 3,
+      }),
+    });
+
+    this.anims.create({
+      key: "skeletonEnemyDeath",
+      frames: this.anims.generateFrameNumbers("skeletonEnemyDeath", {
+        start: 0,
+        end: 3,
+      }),
+    });
+
     this.player.anims.play("playerIdle");
 
     this.cameras.main.startFollow(this.player);
     //this.player.setCollideWorldBounds(true);
-
 
     //setup skeleton enemy
     this.anims.create({
@@ -211,22 +307,15 @@ class SceneMain extends Phaser.Scene {
       repeat: -1,
     });
 
-    
-
-        
     this.time.addEvent({
       delay: 1000,
       callback: this.spawnEnemy,
       callbackScope: this,
-      loop: true
+      loop: true,
     });
-    
 
-     //this.spawnEnemy;
-    
-    
+    //this.spawnEnemy;
   }
-
 
   SkeletonAI(enemy, player) {
     let directionX = player.x - enemy.x;
@@ -242,15 +331,18 @@ class SceneMain extends Phaser.Scene {
   }
 
   spawnEnemy() {
-    const randomPoint = Phaser.Utils.Array.GetRandom(this.enemySpawningPointsContainer.list)
+    const randomPoint = Phaser.Utils.Array.GetRandom(
+      this.enemySpawningPointsContainer.list
+    );
 
     const spawnX = randomPoint.x;
     const spawnY = randomPoint.y;
 
-    const enemy = this.physics.add.sprite(spawnX, spawnY, "skeletonEnemyIdle");
+    const enemy = new SkeletonEnemy(this, spawnX, spawnY, "skeletonEnemyIdle");
     enemy.setDepth(10);
     this.playAnimation(enemy, "skeletonEnemyIdle");
-    this.EnemyList.push(enemy)
+    this.enemyList.push(enemy);
+    this.enemyCollisionGroup.add(enemy);
   }
 
   getChunk(x, y) {
@@ -281,7 +373,6 @@ class SceneMain extends Phaser.Scene {
     */
 
     this.calculateEnemySpawningPoints(8);
-    
 
     var snappedChunkX =
       this.chunkSize *
@@ -327,24 +418,22 @@ class SceneMain extends Phaser.Scene {
       }
     }
 
-    
-    this.EnemyList.forEach(enemy => {
-      this.SkeletonAI(enemy, this.player);
-    })
-    
+    this.enemyList.forEach((enemy) => {
+      enemy.ai(this.player);
+    });
 
     //Movement Controller
     if (this.keyW.isDown) {
-      this.player.y -= this.playerSpeed;
+      this.player.y -= this.playerStats.speed;
     }
     if (this.keyS.isDown) {
-      this.player.y += this.playerSpeed;
+      this.player.y += this.playerStats.speed;
     }
     if (this.keyA.isDown) {
-      this.player.x -= this.playerSpeed;
+      this.player.x -= this.playerStats.speed;
     }
     if (this.keyD.isDown) {
-      this.player.x += this.playerSpeed;
+      this.player.x += this.playerStats.speed;
     }
 
     if (this.isAttacking) {
@@ -388,8 +477,12 @@ class SceneMain extends Phaser.Scene {
   playerAttack() {
     this.isAttacking = true;
 
-    //this.hitbox.setPosition(this.player.x + 20, this.player.y);
+    this.hitbox.setPosition(this.player.x + 20, this.player.y);
     //this.hitbox.setVisible(true);
+
+    this.time.delayedCall(200, () => {
+      //this.hitbox.setVisible = false;
+    });
 
     // Play attack animation with force to override any other animations
     this.playAnimationOverride(this.player, "attack");
@@ -420,3 +513,5 @@ class SceneMain extends Phaser.Scene {
     sprite.anims.play(animationKey, true);
   }
 }
+
+export default SceneMain;

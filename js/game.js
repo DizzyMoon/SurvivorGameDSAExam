@@ -1,3 +1,5 @@
+import SceneMain from "./SceneMain.js";
+
 var config = {
   type: Phaser.WEBGL,
   width: 640,

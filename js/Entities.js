@@ -1,4 +1,4 @@
-class Chunk {
+export class Chunk {
   constructor(scene, x, y) {
     this.scene = scene;
     this.x = x;
@@ -55,7 +55,7 @@ class Chunk {
   }
 }
 
-class Tile extends Phaser.GameObjects.Sprite {
+export class Tile extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y, key) {
     super(scene, x, y, key);
     this.scene = scene;
@@ -64,7 +64,7 @@ class Tile extends Phaser.GameObjects.Sprite {
   }
 }
 
-class Player extends Phaser.GameObjects.Sprite {
+export class Player extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y, key) {
     super(scene, x, y, key);
     this.scene = scne;
