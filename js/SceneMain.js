@@ -4,6 +4,60 @@ class SceneMain extends Phaser.Scene {
     this.isAttacking = false;
   }
 
+  calculateEnemySpawningPoints(numPoints) {
+    // Clear previous spawning points container
+    if (this.enemySpawningPointsContainer) {
+      this.enemySpawningPointsContainer.destroy();
+    }
+
+    // Create a new container for spawning points
+    this.enemySpawningPointsContainer = this.add.container().setDepth(10);
+
+    // Get the camera's world view
+    const cameraView = this.cameras.main.worldView;
+
+    // Calculate positions just outside the camera view for spawning points
+    const padding = 50; // Padding to ensure enemies spawn just outside the camera view
+    const horizontalSpacing =
+      (cameraView.width - padding * 2) / (numPoints - 1);
+    const verticalSpacing = (cameraView.height - padding * 2) / (numPoints - 1);
+
+    // Function to create spawning points
+    const createPoint = (x, y) => {
+      const point = this.add.circle(x, y, 5, 0xff0000);
+      point.setDepth(10);
+      this.enemySpawningPointsContainer.add(point);
+    };
+
+    // Bottom Edge
+    for (let i = 0; i < numPoints; i++) {
+      const x = cameraView.left + padding + i * horizontalSpacing;
+      const y = cameraView.bottom + padding;
+      createPoint(x, y);
+    }
+
+    // Right Edge
+    for (let i = 0; i < numPoints; i++) {
+      const x = cameraView.right + padding;
+      const y = cameraView.top + padding + i * verticalSpacing;
+      createPoint(x, y);
+    }
+
+    // Top Edge
+    for (let i = 0; i < numPoints; i++) {
+      const x = cameraView.right - padding - i * horizontalSpacing;
+      const y = cameraView.top - padding;
+      createPoint(x, y);
+    }
+
+    // Left Edge
+    for (let i = 0; i < numPoints; i++) {
+      const x = cameraView.left - padding;
+      const y = cameraView.bottom - padding - i * verticalSpacing;
+      createPoint(x, y);
+    }
+  }
+
   preload() {
     this.load.image("sprDirt", "content/tiles/dirt.png");
     this.load.image("sprGrass", "content/tiles/grass.png");
@@ -31,6 +85,18 @@ class SceneMain extends Phaser.Scene {
   }
 
   create() {
+    this.cameraBounds = this.cameras.main.getBounds();
+
+    // Define an array to store enemy spawning points
+    this.enemySpawningPoints = [];
+
+    // Calculate initial spawning points
+    this.calculateEnemySpawningPoints(8);
+
+    this.cameras.main.on("camera.scroll", () => {
+      this.calculateEnemySpawningPoints(8);
+    });
+
     this.clock = this.time.addEvent({
       delay: 2000, // 2000 milliseconds = 2 seconds
       callback: this.playerAttack,
@@ -129,6 +195,11 @@ class SceneMain extends Phaser.Scene {
   }
 
   update() {
+    if (this.enemySpawningPointsContainer) {
+      this.enemySpawningPointsContainer.x = this.cameras.main.worldView.x;
+      this.enemySpawningPointsContainer.y = this.cameras.main.worldView.y;
+    }
+
     var snappedChunkX =
       this.chunkSize *
       this.tileSize *
