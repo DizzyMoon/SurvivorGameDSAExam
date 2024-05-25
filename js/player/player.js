@@ -1,26 +1,17 @@
-class Skeleton extends Phaser.GameObjects.Sprite {
+class Player extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
     scene.add.existing(this);
     scene.physics.add.existing(this);
-    this.health = 10;
-    this.speed = 0.3;
-    this.alive = true;
-    this.stunned = false;
+    this.direction = "right";
+    this.health = 100;
+    this.speed = 1.3;
+    this.attackSpeed = 2;
+    this.items = [];
+    this.xp = 0;
+    this.xpToLevelUp = 1000;
     this.body.setSize(30, 60);
-  }
-
-  ai(player) {
-    let directionX = player.x - this.x;
-    let directionY = player.y - this.y;
-
-    //Normalize Vector
-    var length = Math.sqrt(directionX * directionX + directionY * directionY);
-    directionX /= length;
-    directionY /= length;
-
-    this.x += directionX * this.speed;
-    this.y += directionY * this.speed;
+    this.body.setOffset(10, 0);
   }
 
   flipSprite(flipX) {
@@ -38,4 +29,4 @@ class Skeleton extends Phaser.GameObjects.Sprite {
   }
 }
 
-export default Skeleton;
+export default Player;
