@@ -11,20 +11,16 @@ class Player extends Phaser.GameObjects.Sprite {
     this.xp = 0;
     this.xpToLevelUp = 1000;
     this.body.setSize(30, 60);
-    this.body.setOffset(10, 0);
+    this.body.setOffset(82, 60);
   }
 
   flipSprite(flipX) {
     this.setScale(flipX ? -1 : 1, 1);
-
     // Adjust the hitbox offset to keep it in place
     if (flipX) {
-      this.body.setOffset(
-        this.body.width - this.originalOffsetX - this.body.width,
-        this.body.offset.y
-      );
+      this.body.setOffset(110, 60);
     } else {
-      this.body.setOffset(this.originalOffsetX, this.body.offset.y);
+      this.body.setOffset(82, 60);
     }
   }
 }

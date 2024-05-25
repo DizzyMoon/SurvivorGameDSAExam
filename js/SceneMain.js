@@ -452,13 +452,15 @@ class SceneMain extends Phaser.Scene {
       this.playAnimation(this.player, "run");
     } else if (this.keyA.isDown) {
       this.playerStats.direction = "left";
-      this.flipSprite(this.player, true);
+      this.player.flipSprite(true);
+      //this.flipSprite(this.player, true);
       this.playAnimation(this.player, "run");
     } else if (this.keyS.isDown) {
       this.playAnimation(this.player, "run");
     } else if (this.keyD.isDown) {
       this.playerStats.direction = "right";
-      this.flipSprite(this.player, false);
+      //this.flipSprite(this.player, false);
+      this.player.flipSprite(false);
       this.playAnimation(this.player, "run");
     } else {
       this.playAnimation(this.player, "playerIdle");
