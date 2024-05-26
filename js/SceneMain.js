@@ -1,6 +1,7 @@
 import PlayerStats from "./player/player-stats.js";
 import SkeletonEnemy from "./enemy/skeletonEnemy.js";
 import { Chunk, Tile } from "./entities.js";
+import Player from "./player/player.js";
 
 class SceneMain extends Phaser.Scene {
   constructor() {
@@ -78,28 +79,28 @@ class SceneMain extends Phaser.Scene {
     this.load.image("sprDirt", "content/tiles/dirt.png");
     this.load.image("sprGrass", "content/tiles/grass.png");
     this.load.image("sprFlowers", "content/tiles/flowers.png");
-    this.load.spritesheet("playerIdle", "content/player/idle.png", {
+    this.load.spritesheet("playerIdle", "content/player/Idle.png", {
       frameWidth: 180,
       frameHeight: 180,
     });
-    this.load.spritesheet("playerRun", "content/player/run.png", {
-      frameWidth: 180,
-      frameHeight: 180,
-    });
-
-    this.load.spritesheet("playerAttack", "content/player/attack1.png", {
+    this.load.spritesheet("playerRun", "content/player/Run.png", {
       frameWidth: 180,
       frameHeight: 180,
     });
 
-    this.load.spritesheet("playerHeavyAttack", "content/player/attack2.png", {
+    this.load.spritesheet("playerAttack", "content/player/Attack1.png", {
+      frameWidth: 180,
+      frameHeight: 180,
+    });
+
+    this.load.spritesheet("playerHeavyAttack", "content/player/Attack2.png", {
       frameWidth: 180,
       frameHeight: 180,
     });
     // skeleton enemy
     this.load.spritesheet(
       "skeletonEnemyIdle",
-      "content/enemy/skeleton/idle.png",
+      "content/enemy/skeleton/Idle.png",
       {
         frameWidth: 150,
         frameHeight: 150,
@@ -108,7 +109,7 @@ class SceneMain extends Phaser.Scene {
 
     this.load.spritesheet(
       "skeletonEnemyDeath",
-      "content/enemy/skeleton/death.png",
+      "content/enemy/skeleton/Death.png",
       {
         frameWidth: 150,
         frameHeight: 150,
@@ -219,7 +220,12 @@ class SceneMain extends Phaser.Scene {
     this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
     //setup player
-    this.player = this.physics.add.sprite(centerX, centerY, "playerIdle");
+    // this.player = this.physics.add
+    //   .sprite(centerX, centerY, "playerIdle")
+    //   .setSize(30, 60);
+    // this.player.setDepth(10);
+
+    this.player = new Player(this, centerX, centerY, "playerIdle");
     this.player.setDepth(10);
 
     //Setup player attack hitbox
@@ -424,16 +430,16 @@ class SceneMain extends Phaser.Scene {
 
     //Movement Controller
     if (this.keyW.isDown) {
-      this.player.y -= this.playerStats.speed;
+      this.player.y -= this.player.speed;
     }
     if (this.keyS.isDown) {
-      this.player.y += this.playerStats.speed;
+      this.player.y += this.player.speed;
     }
     if (this.keyA.isDown) {
-      this.player.x -= this.playerStats.speed;
+      this.player.x -= this.player.speed;
     }
     if (this.keyD.isDown) {
-      this.player.x += this.playerStats.speed;
+      this.player.x += this.player.speed;
     }
 
     if (this.isAttacking) {
@@ -445,39 +451,30 @@ class SceneMain extends Phaser.Scene {
     if (this.keyW.isDown) {
       this.playAnimation(this.player, "run");
     } else if (this.keyA.isDown) {
-      this.flipSprite(this.player, true);
+      this.playerStats.direction = "left";
+      this.player.flipSprite(true);
+      //this.flipSprite(this.player, true);
       this.playAnimation(this.player, "run");
     } else if (this.keyS.isDown) {
       this.playAnimation(this.player, "run");
     } else if (this.keyD.isDown) {
-      this.flipSprite(this.player, false);
+      this.playerStats.direction = "right";
+      //this.flipSprite(this.player, false);
+      this.player.flipSprite(false);
       this.playAnimation(this.player, "run");
     } else {
       this.playAnimation(this.player, "playerIdle");
     }
-
-    /*
-    if (this.keyW.isDown) {
-      this.followPoint.y -= this.cameraSpeed;
-    }
-    if (this.keyS.isDown) {
-      this.followPoint.y += this.cameraSpeed;
-    }
-    if (this.keyA.isDown) {
-      this.followPoint.x -= this.cameraSpeed;
-    }
-    if (this.keyD.isDown) {
-      this.followPoint.x += this.cameraSpeed;
-    }
-    */
-
-    //this.cameras.main.centerOn(this.followPoint.x, this.followPoint.y);
   }
 
   playerAttack() {
     this.isAttacking = true;
 
-    this.hitbox.setPosition(this.player.x + 20, this.player.y);
+    if (this.playerStats.direction == "right") {
+      this.hitbox.setPosition(this.player.x + 20, this.player.y);
+    } else {
+      this.hitbox.setPosition(this.player.x - 20, this.player.y);
+    }
     //this.hitbox.setVisible(true);
 
     this.time.delayedCall(200, () => {
