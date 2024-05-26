@@ -16,6 +16,19 @@ class SceneMain extends Phaser.Scene {
     this.attackCooldownDuration = 1000;
   }
 
+  // Player stats
+  updatePlayerStats() {
+    const { health, xp, speed, attackSpeed, items } = this.playerStats;
+    const level = this.playerStats.getLevel();
+
+    document.getElementById("health").innerText = `Health: ${health}`;
+    document.getElementById("xp").innerText = `XP: ${xp}`;
+    document.getElementById("level").innerText = `Level: ${level}`;
+    document.getElementById("speed").innerText = `Speed: ${speed}`;
+    document.getElementById("attack-speed").innerText = `Attack Speed: ${attackSpeed}`;
+    document.getElementById("items").innerText = `Items: ${items.length ? items.join(", ") : ""}`;
+  }
+
   calculateEnemySpawningPoints(numPoints) {
     // Clear previous spawning points container
     if (this.enemySpawningPointsContainer) {
@@ -157,6 +170,10 @@ class SceneMain extends Phaser.Scene {
       this.time.delayedCall(500, () => {
         this.playAnimation(enemy, "skeletonEnemyIdle");
       });
+    }
+
+    if (enemy.health <= 0) {
+      this.playerStats.addXP(200); // add xp after defeating an enemy
     }
   }
 
@@ -430,16 +447,16 @@ class SceneMain extends Phaser.Scene {
 
     //Movement Controller
     if (this.keyW.isDown) {
-      this.player.y -= this.player.speed;
+      this.player.y -= this.playerStats.speed;
     }
     if (this.keyS.isDown) {
-      this.player.y += this.player.speed;
+      this.player.y += this.playerStats.speed;
     }
     if (this.keyA.isDown) {
-      this.player.x -= this.player.speed;
+      this.player.x -= this.playerStats.speed;
     }
     if (this.keyD.isDown) {
-      this.player.x += this.player.speed;
+      this.player.x += this.playerStats.speed;
     }
 
     if (this.isAttacking) {
@@ -465,6 +482,9 @@ class SceneMain extends Phaser.Scene {
     } else {
       this.playAnimation(this.player, "playerIdle");
     }
+
+    // diplay updated player stats
+    this.updatePlayerStats();
   }
 
   playerAttack() {
@@ -477,7 +497,9 @@ class SceneMain extends Phaser.Scene {
     }
     //this.hitbox.setVisible(true);
 
-    this.time.delayedCall(200, () => {
+    const attackDuration = 500 / this.playerStats.attackSpeed;
+
+    this.time.delayedCall(attackDuration, () => {
       //this.hitbox.setVisible = false;
     });
 

@@ -1,8 +1,44 @@
 canvas {
   justify-content: center;
   align-items: center;
+  display: block;
+  margin: 0 auto;
 }
 
 * {
   background-color: rgb(87, 103, 86);
+}
+
+#player-stats {
+  position: absolute;
+  top: 20%;
+  left: 23%;
+  width: 10%;
+  color: rgb(255, 255, 255);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  font-family: "Calibra", sans-serif;
+  z-index: 1000;
+  transition: transform 0.2s ease-in-out;
+}
+
+#player-stats p {
+  margin: 10px 0;
+  font-size: 1.1em;
+  line-height: 1.7em;
+  display: flex;
+  align-items: center;
+}
+
+#player-stats::before {
+  border-radius: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+#player-stats p::before {
+  content: attr(data-icon);
+  margin-right: 10px;
+  font-size: 1.3em;
 }
