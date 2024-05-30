@@ -1,4 +1,3 @@
-import PlayerStats from "./player/player-stats.js";
 import SkeletonEnemy from "./enemy/skeletonEnemy.js";
 import { Chunk, Tile } from "./entities.js";
 import Player from "./player/player.js";
@@ -11,15 +10,14 @@ class SceneMain extends Phaser.Scene {
     this.player;
     this.enemyCollisionGroup;
     this.hitboxCollisionGroup;
-    this.playerStats = new PlayerStats();
     //this.attackCooldown = false; // Initialize attack cooldown flag
     this.attackCooldownDuration = 1000;
   }
 
   // Player stats
   updatePlayerStats() {
-    const { health, xp, speed, attackSpeed, items } = this.playerStats;
-    const level = this.playerStats.getLevel();
+    const { health, xp, speed, attackSpeed, items } = this.player;
+    const level = this.player.getLevel();
 
     document.getElementById("health").innerText = `Health: ${health}`;
     document.getElementById("xp").innerText = `XP: ${xp}`;
@@ -173,7 +171,7 @@ class SceneMain extends Phaser.Scene {
     }
 
     if (enemy.health <= 0) {
-      this.playerStats.addXP(200); // add xp after defeating an enemy
+      this.player.addXP(200); // add xp after defeating an enemy
     }
   }
 
@@ -447,16 +445,16 @@ class SceneMain extends Phaser.Scene {
 
     //Movement Controller
     if (this.keyW.isDown) {
-      this.player.y -= this.playerStats.speed;
+      this.player.y -= this.player.speed;
     }
     if (this.keyS.isDown) {
-      this.player.y += this.playerStats.speed;
+      this.player.y += this.player.speed;
     }
     if (this.keyA.isDown) {
-      this.player.x -= this.playerStats.speed;
+      this.player.x -= this.player.speed;
     }
     if (this.keyD.isDown) {
-      this.player.x += this.playerStats.speed;
+      this.player.x += this.player.speed;
     }
 
     if (this.isAttacking) {
@@ -468,14 +466,14 @@ class SceneMain extends Phaser.Scene {
     if (this.keyW.isDown) {
       this.playAnimation(this.player, "run");
     } else if (this.keyA.isDown) {
-      this.playerStats.direction = "left";
+      this.player.direction = "left";
       this.player.flipSprite(true);
       //this.flipSprite(this.player, true);
       this.playAnimation(this.player, "run");
     } else if (this.keyS.isDown) {
       this.playAnimation(this.player, "run");
     } else if (this.keyD.isDown) {
-      this.playerStats.direction = "right";
+      this.player.direction = "right";
       //this.flipSprite(this.player, false);
       this.player.flipSprite(false);
       this.playAnimation(this.player, "run");
@@ -490,14 +488,14 @@ class SceneMain extends Phaser.Scene {
   playerAttack() {
     this.isAttacking = true;
 
-    if (this.playerStats.direction == "right") {
+    if (this.player.direction == "right") {
       this.hitbox.setPosition(this.player.x + 20, this.player.y);
     } else {
       this.hitbox.setPosition(this.player.x - 20, this.player.y);
     }
     //this.hitbox.setVisible(true);
 
-    const attackDuration = 500 / this.playerStats.attackSpeed;
+    const attackDuration = 500 / this.player.attackSpeed;
 
     this.time.delayedCall(attackDuration, () => {
       //this.hitbox.setVisible = false;
