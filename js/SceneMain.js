@@ -420,22 +420,6 @@ class SceneMain extends Phaser.Scene {
   }
 
   update() {
-    /*
-    if (this.enemySpawningPointsContainer) {
-       this.enemySpawningPointsContainer.x = this.cameras.main.worldView.x;
-       this.enemySpawningPointsContainer.y = this.cameras.main.worldView.y;
-     }
-
-     */
-
-    /*
-    if (this.enemySpawningPointsContainer) {
-    // Update its position to follow the player
-      this.enemySpawningPointsContainer.x = this.player.x - (this.cameras.main.width);
-      this.enemySpawningPointsContainer.y = this.player.y - (this.cameras.main.height / 2);
-    }
-    */
-
     this.calculateEnemySpawningPoints(8);
 
     var snappedChunkX =
