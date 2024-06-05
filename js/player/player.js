@@ -6,7 +6,7 @@ class Player extends Phaser.GameObjects.Sprite {
     this.direction = "right";
     this.baseHealth = 100;
     this.health = this.baseHealth;
-    this.baseSpeed = 1.3;
+    this.baseSpeed = 3;
     this.speed = this.baseSpeed;
     this.speed = 1.3;
     this.baseAttackSpeed = 2;
@@ -50,9 +50,20 @@ class Player extends Phaser.GameObjects.Sprite {
     const speedIncreaseFactor = 1.05; // +5% movement speed
     const attackSpeedIncreaseFactor = 1.1; // +10% attack speed
 
-    this.health = Math.round(this.baseHealth * Math.pow(healthIncreaseFactor, this.level - 1));
-    this.speed = parseFloat((this.baseSpeed * Math.pow(speedIncreaseFactor, this.level - 1)).toFixed(2));
-    this.attackSpeed = parseFloat((this.baseAttackSpeed * Math.pow(attackSpeedIncreaseFactor, this.level - 1)).toFixed(2));
+    this.health = Math.round(
+      this.baseHealth * Math.pow(healthIncreaseFactor, this.level - 1)
+    );
+    this.speed = parseFloat(
+      (this.baseSpeed * Math.pow(speedIncreaseFactor, this.level - 1)).toFixed(
+        2
+      )
+    );
+    this.attackSpeed = parseFloat(
+      (
+        this.baseAttackSpeed *
+        Math.pow(attackSpeedIncreaseFactor, this.level - 1)
+      ).toFixed(2)
+    );
   }
 
   // player level

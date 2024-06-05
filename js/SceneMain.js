@@ -1,12 +1,14 @@
 import SkeletonEnemy from "./enemy/skeletonEnemy.js";
 import { Chunk, Tile } from "./entities.js";
 import Player from "./player/player.js";
+import Bat from "./enemy/batEnemy.js";
 
 class SceneMain extends Phaser.Scene {
   constructor() {
     super({ key: "SceneMain" });
     this.isAttacking = false;
-    this.enemyList = [];
+    this.skeletonList = [];
+    this.batList = [];
     this.player;
     this.enemyCollisionGroup;
     this.hitboxCollisionGroup;
@@ -16,15 +18,19 @@ class SceneMain extends Phaser.Scene {
 
   // Player stats
   updatePlayerStats() {
-    const { health, xp, speed, attackSpeed, items } = this.player;
+    const { health, xp, xpToLevelUp, speed, attackSpeed, items } = this.player;
     const level = this.player.getLevel();
 
     document.getElementById("health").innerText = `Health: ${health}`;
-    document.getElementById("xp").innerText = `XP: ${xp}`;
+    document.getElementById("xp").innerText = `XP: ${xp} / ${xpToLevelUp}`;
     document.getElementById("level").innerText = `Level: ${level}`;
     document.getElementById("speed").innerText = `Speed: ${speed}`;
-    document.getElementById("attack-speed").innerText = `Attack Speed: ${attackSpeed}`;
-    document.getElementById("items").innerText = `Items: ${items.length ? items.join(", ") : ""}`;
+    document.getElementById(
+      "attack-speed"
+    ).innerText = `Attack Speed: ${attackSpeed}`;
+    document.getElementById("items").innerText = `Items: ${
+      items.length ? items.join(", ") : ""
+    }`;
   }
 
   calculateEnemySpawningPoints(numPoints) {
@@ -108,6 +114,17 @@ class SceneMain extends Phaser.Scene {
       frameWidth: 180,
       frameHeight: 180,
     });
+
+    //Bat enemy
+    this.load.spritesheet(
+      "batEnemyFlight",
+      "content/enemy/flying eye/Flight.png",
+      {
+        frameWidth: 150,
+        frameHeight: 150,
+      }
+    );
+
     // skeleton enemy
     this.load.spritesheet(
       "skeletonEnemyIdle",
@@ -162,16 +179,14 @@ class SceneMain extends Phaser.Scene {
     if (enemy.health <= 0) {
       // Enemy defeated
       this.playAnimation(enemy, "skeletonEnemyDeath");
-      Phaser.Utils.Array.Remove(this.enemyList, enemy);
+      Phaser.Utils.Array.Remove(this.skeletonList, enemy);
+      enemy.alive = false;
+      this.player.addXP(200); // add xp after defeating an enemy
     } else {
       // Enemy still alive
       this.time.delayedCall(500, () => {
         this.playAnimation(enemy, "skeletonEnemyIdle");
       });
-    }
-
-    if (enemy.health <= 0) {
-      this.player.addXP(200); // add xp after defeating an enemy
     }
   }
 
@@ -254,7 +269,7 @@ class SceneMain extends Phaser.Scene {
 
     this.physics.add.overlap(
       this.hitbox,
-      this.enemyList,
+      this.skeletonList,
       this.hitEnemy,
       null,
       this
@@ -328,9 +343,20 @@ class SceneMain extends Phaser.Scene {
       repeat: -1,
     });
 
+    // Bat animation setup
+    this.anims.create({
+      key: "batEnemyFlight",
+      frames: this.anims.generateFrameNumbers("batEnemyFlight", {
+        start: 0,
+        end: 7,
+      }),
+      frameRate: 12,
+      repeat: -1,
+    });
+
     this.time.addEvent({
       delay: 1000,
-      callback: this.spawnEnemy,
+      callback: this.spawnBat,
       callbackScope: this,
       loop: true,
     });
@@ -351,7 +377,7 @@ class SceneMain extends Phaser.Scene {
     enemy.y += directionY * this.enemySpeed;
   }
 
-  spawnEnemy() {
+  spawnSkeleton() {
     const randomPoint = Phaser.Utils.Array.GetRandom(
       this.enemySpawningPointsContainer.list
     );
@@ -362,8 +388,25 @@ class SceneMain extends Phaser.Scene {
     const enemy = new SkeletonEnemy(this, spawnX, spawnY, "skeletonEnemyIdle");
     enemy.setDepth(10);
     this.playAnimation(enemy, "skeletonEnemyIdle");
-    this.enemyList.push(enemy);
+    this.skeletonList.push(enemy);
     this.enemyCollisionGroup.add(enemy);
+  }
+
+  spawnBat() {
+    if (this.batList.length < 100) {
+      const randomPoint = Phaser.Utils.Array.GetRandom(
+        this.enemySpawningPointsContainer.list
+      );
+
+      const spawnX = randomPoint.x;
+      const spawnY = randomPoint.y;
+
+      const bat = new Bat(this, spawnX, spawnY, "batEnemyFlight");
+      this.playAnimation(bat, "batEnemyFlight");
+      bat.setDepth(10);
+      this.batList.push(bat);
+      this.enemyCollisionGroup.add(bat);
+    }
   }
 
   getChunk(x, y) {
@@ -439,8 +482,13 @@ class SceneMain extends Phaser.Scene {
       }
     }
 
-    this.enemyList.forEach((enemy) => {
-      enemy.ai(this.player);
+    // Apply Enemy AI
+    this.skeletonList.forEach((skeleton) => {
+      skeleton.ai(this.player);
+    });
+
+    this.batList.forEach((bat) => {
+      bat.boids(this.batList, this.player);
     });
 
     //Movement Controller

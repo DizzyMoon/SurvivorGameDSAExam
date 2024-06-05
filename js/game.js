@@ -8,7 +8,7 @@ var config = {
   physics: {
     default: "arcade",
     arcade: {
-      debug: true,
+      debug: false,
       Gravity: { x: 0, y: 0 },
     },
   },
