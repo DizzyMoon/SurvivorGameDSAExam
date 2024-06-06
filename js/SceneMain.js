@@ -1,7 +1,7 @@
 import SkeletonEnemy from "./enemy/skeletonEnemy.js";
 import { Chunk, Tile } from "./entities.js";
 import Player from "./player/player.js";
-import Bat from "./enemy/batEnemy.js";
+import BatEnemy from "./enemy/batEnemy.js";
 import BerserkersGloves from "./item/berserkers_gloves.js";
 import MithrilMail from "./item/mithril_mail.js";
 import FiasBlessing from "./item/fias_blessing.js";
@@ -160,6 +160,24 @@ class SceneMain extends Phaser.Scene {
       }
     );
 
+    this.load.spritesheet(
+      "batEnemyTakeHit",
+      "content/enemy/flying eye/Take Hit.png",
+      {
+        frameWidth: 150,
+        frameHeight: 150,
+      }
+    );
+
+    this.load.spritesheet(
+      "batEnemyDeath",
+      "content/enemy/flying eye/Death.png",
+      {
+        frameWidth: 150,
+        frameHeight: 150,
+      }
+    );
+
     // skeleton enemy
     this.load.spritesheet(
       "skeletonEnemyIdle",
@@ -201,27 +219,50 @@ class SceneMain extends Phaser.Scene {
 
     console.log(`Hit enemy at (${enemy.x}, ${enemy.y})`);
 
-    // Perform attack logic...
-    this.playAnimation(enemy, "skeletonEnemyHit");
-    enemy.health -= 3;
+    if (enemy instanceof SkeletonEnemy) {
+      // Perform attack logic...
+      this.playAnimation(enemy, "skeletonEnemyHit");
+      enemy.health -= this.player.damage;
 
-    // Start attack cooldown
-    enemy.stunned = true;
-    this.time.delayedCall(this.attackCooldownDuration, () => {
-      enemy.stunned = false; // Reset attack cooldown flag
-    });
-
-    if (enemy.health <= 0) {
-      // Enemy defeated
-      this.playAnimation(enemy, "skeletonEnemyDeath");
-      Phaser.Utils.Array.Remove(this.skeletonList, enemy);
-      enemy.alive = false;
-      this.player.addXP(200); // add xp after defeating an enemy
-    } else {
-      // Enemy still alive
-      this.time.delayedCall(500, () => {
-        this.playAnimation(enemy, "skeletonEnemyIdle");
+      // Start attack cooldown
+      enemy.stunned = true;
+      this.time.delayedCall(this.attackCooldownDuration, () => {
+        enemy.stunned = false; // Reset attack cooldown flag
       });
+
+      if (enemy.health <= 0) {
+        // Enemy defeated
+        this.playAnimation(enemy, "skeletonEnemyDeath");
+        Phaser.Utils.Array.Remove(this.skeletonList, enemy);
+        enemy.alive = false;
+        this.player.addXP(200); // add xp after defeating an enemy
+      } else {
+        // Enemy still alive
+        this.time.delayedCall(500, () => {
+          this.playAnimation(enemy, "skeletonEnemyIdle");
+        });
+      }
+    }
+
+    if (enemy instanceof BatEnemy) {
+      this.playAnimation(enemy, "batEnemyTakeHit");
+      enemy.health -= this.player.damage;
+
+      enemy.stunned = true;
+      this.time.delayedCall(this.attackCooldownDuration, () => {
+        enemy.stunned = false;
+      });
+
+      if (enemy.health <= 0) {
+        this.playAnimation(enemy, "batEnemyDeath"); //Death animation
+        Phaser.Utils.Array.Remove(this.batList, enemy);
+        enemy.alive = false;
+        this.player.addXP(50);
+      } else {
+        this.time.delayedCall(500, () => {
+          this.playAnimation(enemy, "batEnemyFlight");
+        });
+      }
     }
   }
 
@@ -321,6 +362,14 @@ class SceneMain extends Phaser.Scene {
       this
     );
 
+    this.physics.add.overlap(
+      this.hitbox,
+      this.batList,
+      this.hitEnemy,
+      null,
+      this
+    );
+
     this.anims.create({
       key: "playerIdle",
       frames: this.anims.generateFrameNumbers("playerIdle", {
@@ -400,6 +449,25 @@ class SceneMain extends Phaser.Scene {
       repeat: -1,
     });
 
+    this.anims.create({
+      key: "batEnemyTakeHit",
+      frames: this.anims.generateFrameNumbers("batEnemyTakeHit", {
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 12,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "batEnemyDeath",
+      frames: this.anims.generateFrameNumbers("batEnemyDeath", {
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 12,
+    });
+
     this.time.addEvent({
       delay: 1000,
       callback: this.spawnEnemies,
@@ -412,7 +480,7 @@ class SceneMain extends Phaser.Scene {
 
   spawnEnemies() {
     this.spawnSkeleton();
-    //this.spawnBat();
+    this.spawnBat();
   }
 
   SkeletonAI(enemy, player) {
@@ -452,7 +520,7 @@ class SceneMain extends Phaser.Scene {
       const spawnX = randomPoint.x;
       const spawnY = randomPoint.y;
 
-      const bat = new Bat(this, spawnX, spawnY, "batEnemyFlight");
+      const bat = new BatEnemy(this, spawnX, spawnY, "batEnemyFlight");
       this.playAnimation(bat, "batEnemyFlight");
       bat.setDepth(10);
       this.batList.push(bat);
