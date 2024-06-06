@@ -1,6 +1,7 @@
 import BerserkersGloves from "./item/berserkers_gloves.js";
 import FiasBlessing from "./item/fias_blessing.js";
 import LightningGrieves from "./item/lightning_grieves.js";
+import LightningSpell from "./item/lightning_spell.js";
 import MithrilMail from "./item/mithril_mail.js";
 
 class SceneLevelUp extends Phaser.Scene {
@@ -11,6 +12,7 @@ class SceneLevelUp extends Phaser.Scene {
       new FiasBlessing(),
       new LightningGrieves(),
       new MithrilMail(),
+      new LightningSpell(),
     ];
   }
 
