@@ -7,6 +7,9 @@ class Player extends Phaser.GameObjects.Sprite {
     this.baseHealth = 100;
     this.healthModifier;
     this.health = this.baseHealth;
+    this.baseDamage = 3;
+    this.damageModifier;
+    this.damage = this.baseDamage;
     this.baseSpeed = 3;
     this.speedModifier;
     this.speed = this.baseSpeed;
@@ -92,12 +95,12 @@ class Player extends Phaser.GameObjects.Sprite {
 
   // level up player
   checkLevelUp() {
-    const newLevel = Math.floor(this.xp / this.xpToLevelUp) + 1;
-    this.scene.scene.launch("sceneLevelUp", { playerData: this });
-    this.scene.scene.pause();
-    if (newLevel > this.level) {
+    if (this.xp >= this.xpToLevelUp) {
+      this.scene.scene.launch("sceneLevelUp", { playerData: this });
       this.scene.scene.pause();
-      this.level = newLevel;
+      this.level++;
+      this.xp = 0;
+      this.xpToLevelUp = Math.floor(1000 * Math.pow(1.3, this.level - 1));
       this.updateStats();
     }
   }
