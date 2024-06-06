@@ -124,6 +124,13 @@ class Player extends Phaser.GameObjects.Sprite {
     );
   }
 
+  updateWeaponRadius() {
+    if (this.weapon) {
+      const newRadius = 50 + (this.level - 1) * 10; // Increase radius by 10 per level
+      this.weapon.updateRadius(newRadius);
+    }
+  }
+
   // player level
   getLevel() {
     return this.level;

@@ -41,21 +41,29 @@ class SceneLevelUp extends Phaser.Scene {
 
   handleItemChoice(item, player) {
     if (item instanceof LightningSpell) {
-      const weapon = new Weapon(this.scene.get("SceneMain"), this.player, 200); // initialize weapon with main scene
-      this.player.addWeapon(weapon); // add selected weapon to player
-      this.player.enableWeapon(); // enable weapon for player
-    }
+      let existingItem = this.player.items.find(i => i.name === item.name);
+      if (!existingItem) {
+        this.player.addItem(item);
+        const initialRadius = 50; // level 1 radius 50
+        const weapon = new Weapon(this.scene.get("SceneMain"), this.player, initialRadius);
+        this.player.addWeapon(weapon);
+        this.player.enableWeapon();
+      }
 
-    let existingItem;
-
-    this.player.items.forEach((i) => {
-      i.name === item.name ? (existingItem = i) : null;
-    });
-
-    if (existingItem !== undefined) {
-      existingItem.level++;
+      if (existingItem) {
+        existingItem.level++;
+        if (item instanceof LightningSpell && player.weapon) {
+          const newRadius = 50 + (existingItem.level - 1) * 10; // increase radius by 10 for each level
+          player.weapon.updateRadius(newRadius);
+        }
+      }
     } else {
-      this.player.addItem(item);
+      let existingItem = player.items.find(i => i.name === item.name);
+      if (existingItem) {
+        existingItem.level++;
+      } else {
+        player.addItem(item);
+      }
     }
 
     player.applyModifiers();
@@ -145,7 +153,7 @@ class SceneLevelUp extends Phaser.Scene {
     description3.setOrigin(0.5);
   }
 
-  update() {}
+  update() { }
 }
 
 export default SceneLevelUp;

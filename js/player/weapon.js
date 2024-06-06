@@ -6,8 +6,8 @@ class Weapon {
 
     // Create weapon
     this.graphics = scene.add.graphics();
-    this.graphics.lineStyle(5, 0xff0000, 1);
-    this.graphics.strokeCircle(player.x, player.y, radius);
+    // this.graphics.lineStyle(5, 0x0000ff, 1);
+    // this.graphics.strokeCircle(player.x, player.y, radius);
     this.graphics.setDepth(20);
 
     // Create a circle hitbox for weapon
@@ -32,10 +32,17 @@ class Weapon {
 
   update() {
     this.graphics.clear();
-    this.graphics.lineStyle(5, 0xff0000, 1);
-    this.graphics.strokeCircle(this.player.x, this.player.y, this.radius);
+    // this.graphics.lineStyle(5, 0xff0000, 1);
+    // this.graphics.strokeCircle(this.player.x, this.player.y, this.radius);
 
     this.hitbox.setPosition(this.player.x, this.player.y);
+  }
+
+  updateRadius(newRadius) {
+    this.radius = newRadius;
+    this.hitbox.setRadius(newRadius);
+    this.hitbox.body.setCircle(newRadius);
+    this.hitbox.body.setOffset(-newRadius / 2, -newRadius / 2); // offset to center
   }
 
   dealDamage() {
