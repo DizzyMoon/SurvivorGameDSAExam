@@ -15,6 +15,8 @@ class Player extends Phaser.GameObjects.Sprite {
     this.attackSpeedModifier;
     this.attackSpeed = this.baseAttackSpeed;
     this.items = [];
+    this.weapon = null;
+    this.weaponEnabled = false;
     this.xp = 0;
     this.xpModifier;
     this.xpToLevelUp = 1000;
@@ -128,6 +130,20 @@ class Player extends Phaser.GameObjects.Sprite {
   }
 
   addModifiers(item) {}
+
+  addWeapon(weapon) {
+    this.weapon = weapon;
+  }
+
+  enableWeapon() {
+    this.weaponEnabled = true;
+  }
+
+  update() {
+    if (this.weaponEnabled && this.weapon) {
+      this.weapon.update();
+    }
+  }
 }
 
 export default Player;
