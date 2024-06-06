@@ -3,6 +3,7 @@ import FiasBlessing from "./item/fias_blessing.js";
 import LightningGrieves from "./item/lightning_grieves.js";
 import LightningSpell from "./item/lightning_spell.js";
 import MithrilMail from "./item/mithril_mail.js";
+import Weapon from "./player/weapon.js";
 
 class SceneLevelUp extends Phaser.Scene {
   constructor() {
@@ -39,7 +40,13 @@ class SceneLevelUp extends Phaser.Scene {
   }
 
   handleItemChoice(item) {
-    this.player.addItem(item);
+    if (item instanceof LightningSpell) {
+      const weapon = new Weapon(this.scene.get("SceneMain"), this.player, 200); // initialize weapon with main scene
+      this.player.addWeapon(weapon); // add selected weapon to player
+      this.player.enableWeapon(); // enable weapon for player
+    } else {
+      this.player.addItem(item);
+    }
     this.scene.resume("SceneMain");
     this.scene.stop();
   }

@@ -6,6 +6,7 @@ import BerserkersGloves from "./item/berserkers_gloves.js";
 import MithrilMail from "./item/mithril_mail.js";
 import FiasBlessing from "./item/fias_blessing.js";
 import LightningGrieves from "./item/lightning_grieves.js";
+import LightningSpell from "./item/lightning_spell.js";
 import Weapon from "./player/weapon.js";
 
 class SceneMain extends Phaser.Scene {
@@ -18,7 +19,10 @@ class SceneMain extends Phaser.Scene {
       new FiasBlessing(),
       new LightningGrieves(),
       new MithrilMail(),
+      new LightningSpell(),
     ];
+
+    this.LightningSpell = null;
 
     this.isAttacking = false;
     this.skeletonList = [];
@@ -300,9 +304,6 @@ class SceneMain extends Phaser.Scene {
     this.player = new Player(this, centerX, centerY, "playerIdle");
     this.player.setDepth(10);
 
-    // Create the weapon
-    this.weapon = new Weapon(this, this.player, 200);
-
     //Setup player attack hitbox
     this.hitbox = this.physics.add
       .sprite(this.player.x + 20, this.player.y, "content/player/hitbox.png")
@@ -410,8 +411,8 @@ class SceneMain extends Phaser.Scene {
   }
 
   spawnEnemies() {
-    //this.spawnSkeleton();
-    this.spawnBat();
+    this.spawnSkeleton();
+    //this.spawnBat();
   }
 
   SkeletonAI(enemy, player) {
@@ -494,9 +495,9 @@ class SceneMain extends Phaser.Scene {
   }
 
   update() {
-    // ensure weapon follows the player
-    if (this.weapon) {
-      this.weapon.update();
+    // ensure player have weapon and is enabled
+    if (this.player.weaponEnabled && this.player.weapon) {
+      this.player.weapon.update();
     }
 
     const ruleOfAlignment = document.getElementById("rule-of-alignment");
