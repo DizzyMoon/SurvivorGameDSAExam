@@ -3,7 +3,7 @@ import Item from "./item.js";
 class MithrilMail extends Item {
   constructor() {
     super();
-    this.healthModifier = 20;
+    this.healthModifier = 50;
     this.name = "Mithril Mail";
     this.description = "Raises health";
     this.icon = "content/item_icons/armor/armor_01b.png";

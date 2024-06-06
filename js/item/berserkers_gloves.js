@@ -5,7 +5,7 @@ class BerserkersGloves extends Item {
     super();
     this.name = "Berserkers Gloves";
     this.description = "Raises attack speed";
-    this.attackSpeedModifier = 0.3;
+    this.attackSpeedModifier = 1.5;
     this.icon = "content/item_icons/gloves/gloves_01e.png";
     this.iconName = "berserkersGloves";
   }

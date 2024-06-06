@@ -1,10 +1,14 @@
+import BerserkersGloves from "../item/berserkers_gloves.js";
+
 class Player extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
     scene.add.existing(this);
     scene.physics.add.existing(this);
+    this.canDamage = false;
+    this.iFrames = false;
     this.direction = "right";
-    this.baseHealth = 100;
+    this.baseHealth = 500;
     this.healthModifier;
     this.health = this.baseHealth;
     this.baseDamage = 3;
@@ -14,7 +18,7 @@ class Player extends Phaser.GameObjects.Sprite {
     this.speedModifier;
     this.speed = this.baseSpeed;
     //this.speed = 1.3;
-    this.baseAttackSpeed = 2;
+    this.baseAttackSpeed = 1;
     this.attackSpeedModifier;
     this.attackSpeed = this.baseAttackSpeed;
     this.items = [];
