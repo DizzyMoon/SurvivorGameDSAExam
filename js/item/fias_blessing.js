@@ -5,7 +5,7 @@ class FiasBlessing extends Item {
     super();
     this.name = "Fias Blessing";
     this.description = "Raises XP gain";
-    this.xpModifier = 0.3;
+    this.xpModifier = 1.2;
     this.icon = "content/item_icons/leaf/leaf_01a.png";
     this.iconName = "fiasBlessing";
   }

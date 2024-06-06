@@ -39,14 +39,26 @@ class SceneLevelUp extends Phaser.Scene {
     return newItem;
   }
 
-  handleItemChoice(item) {
+  handleItemChoice(item, player) {
     if (item instanceof LightningSpell) {
       const weapon = new Weapon(this.scene.get("SceneMain"), this.player, 200); // initialize weapon with main scene
       this.player.addWeapon(weapon); // add selected weapon to player
       this.player.enableWeapon(); // enable weapon for player
+    }
+
+    let existingItem;
+
+    this.player.items.forEach((i) => {
+      i.name === item.name ? (existingItem = i) : null;
+    });
+
+    if (existingItem !== undefined) {
+      existingItem.level++;
     } else {
       this.player.addItem(item);
     }
+
+    player.applyModifiers();
     this.scene.resume("SceneMain");
     this.scene.stop();
   }
@@ -76,7 +88,7 @@ class SceneLevelUp extends Phaser.Scene {
     sprite1.setDepth(100);
     sprite1.setInteractive();
     sprite1.on("pointerdown", () => {
-      this.handleItemChoice(item1);
+      this.handleItemChoice(item1, this.player);
       console.log("You clicked the " + item1.name);
     });
 
@@ -96,7 +108,7 @@ class SceneLevelUp extends Phaser.Scene {
     sprite2.setDepth(100);
     sprite2.setInteractive();
     sprite2.on("pointerdown", () => {
-      this.handleItemChoice(item2);
+      this.handleItemChoice(item2, this.player);
       console.log("You clicked the " + item2.name);
     });
 
@@ -116,7 +128,7 @@ class SceneLevelUp extends Phaser.Scene {
     sprite3.setDepth(100);
     sprite3.setInteractive();
     sprite3.on("pointerdown", () => {
-      this.handleItemChoice(item3);
+      this.handleItemChoice(item3, this.player);
       console.log("You clicked the " + item3.name);
     });
 

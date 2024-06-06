@@ -5,21 +5,63 @@ class Player extends Phaser.GameObjects.Sprite {
     scene.physics.add.existing(this);
     this.direction = "right";
     this.baseHealth = 100;
+    this.healthModifier;
     this.health = this.baseHealth;
     this.baseSpeed = 3;
+    this.speedModifier;
     this.speed = this.baseSpeed;
-    this.speed = 1.3;
+    //this.speed = 1.3;
     this.baseAttackSpeed = 2;
+    this.attackSpeedModifier;
     this.attackSpeed = this.baseAttackSpeed;
     this.items = [];
     this.weapon = null;
     this.weaponEnabled = false;
     this.xp = 0;
+    this.xpModifier;
     this.xpToLevelUp = 1000;
     this.level = 1;
     this.body.setSize(30, 60);
     this.body.setOffset(82, 60);
     this.updateStats();
+  }
+
+  getHealthModifier() {
+    let modifier = 0;
+    this.items.forEach((item) => {
+      modifier = modifier + item.healthModifier * item.level;
+    });
+    return modifier;
+  }
+
+  getSpeedModifier() {
+    let modifier = 0;
+    this.items.forEach((item) => {
+      modifier = modifier + item.speedModifier * item.level;
+    });
+    return modifier;
+  }
+
+  getAttackSpeedModifier() {
+    let modifier = 0;
+    this.items.forEach((item) => {
+      modifier = modifier + item.attackSpeedModifier * item.level;
+    });
+    return modifier;
+  }
+
+  getXpModifier() {
+    let modifier = 0;
+    this.items.forEach((item) => {
+      modifier = modifier + item.xpModifier + item.level / 2;
+    });
+
+    // Avoid multiplying by 0
+    if (modifier === 0) {
+      return 1;
+    }
+
+    return modifier;
   }
 
   addItem(item) {
@@ -37,8 +79,15 @@ class Player extends Phaser.GameObjects.Sprite {
   }
 
   addXP(amount) {
-    this.xp += amount;
+    const toAdd = amount * this.getXpModifier();
+    this.xp += toAdd;
     this.checkLevelUp();
+  }
+
+  applyModifiers() {
+    this.health = this.baseHealth + this.getHealthModifier();
+    this.attackSpeed = this.baseAttackSpeed + this.getAttackSpeedModifier();
+    this.speed = this.baseSpeed + this.getSpeedModifier();
   }
 
   // level up player
