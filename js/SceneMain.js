@@ -1,7 +1,7 @@
 import SkeletonEnemy from "./enemy/skeletonEnemy.js";
 import { Chunk, Tile } from "./entities.js";
 import Player from "./player/player.js";
-import Bat from "./enemy/batEnemy.js";
+import BatEnemy from "./enemy/batEnemy.js";
 import BerserkersGloves from "./item/berserkers_gloves.js";
 import MithrilMail from "./item/mithril_mail.js";
 import FiasBlessing from "./item/fias_blessing.js";
@@ -14,6 +14,12 @@ class SceneMain extends Phaser.Scene {
     super({ key: "SceneMain" });
     this.preloadKeys = [];
 
+    this.spawnRate = 30000;
+    this.spawnBatAmount = 5;
+    this.spawnSkeletonAmount = 5;
+    this.spawnBats = false;
+    this.tempLevel;
+
     this.itemPool = [
       new BerserkersGloves(),
       new FiasBlessing(),
@@ -23,6 +29,7 @@ class SceneMain extends Phaser.Scene {
     ];
 
     this.LightningSpell = null;
+    this.attackLoop;
 
     this.isAttacking = false;
     this.skeletonList = [];
@@ -51,6 +58,23 @@ class SceneMain extends Phaser.Scene {
     document.getElementById("items").innerText = `Items: ${
       items.length ? itemNames.join(", ") : ""
     }`;
+  }
+
+  createAttackLoop() {
+    // Destroy the existing timed event if it exists
+    if (this.attackLoop) {
+      this.attackLoop.remove(false);
+    }
+
+    console.log("Attack speed", this.player.attackSpeed);
+
+    // Create a new timed event with the updated delay
+    this.attackLoop = this.time.addEvent({
+      delay: 2000 / this.player.attackSpeed, // 2000 milliseconds = 2 seconds
+      callback: this.playerAttack,
+      callbackScope: this,
+      loop: true, // Repeat indefinitely
+    });
   }
 
   calculateEnemySpawningPoints(numPoints) {
@@ -131,6 +155,11 @@ class SceneMain extends Phaser.Scene {
     this.load.image("sprFlowers", "content/tiles/flowers.png");
     this.preloadKeys.push("sprFlowers");
 
+    this.load.spritesheet("playerDeath", "content/player/Death.png", {
+      frameWidth: 180,
+      frameHeight: 180,
+    });
+
     this.load.spritesheet("playerIdle", "content/player/Idle.png", {
       frameWidth: 180,
       frameHeight: 180,
@@ -154,6 +183,24 @@ class SceneMain extends Phaser.Scene {
     this.load.spritesheet(
       "batEnemyFlight",
       "content/enemy/flying eye/Flight.png",
+      {
+        frameWidth: 150,
+        frameHeight: 150,
+      }
+    );
+
+    this.load.spritesheet(
+      "batEnemyTakeHit",
+      "content/enemy/flying eye/Take Hit.png",
+      {
+        frameWidth: 150,
+        frameHeight: 150,
+      }
+    );
+
+    this.load.spritesheet(
+      "batEnemyDeath",
+      "content/enemy/flying eye/Death.png",
       {
         frameWidth: 150,
         frameHeight: 150,
@@ -193,6 +240,45 @@ class SceneMain extends Phaser.Scene {
 
   killEnemy(enemy) {}
 
+  hitPlayer(enemy) {
+    if (this.player.iFrames) {
+      return;
+    }
+
+    if (this.player.health > 0) {
+      this.player.health -= enemy.damage;
+    }
+    this.player.iFrames = true;
+    this.time.delayedCall(300, () => {
+      this.player.iFrames = false;
+    });
+  }
+
+  gameOver() {
+    const centerX = this.player.x;
+    const centerY = this.player.y;
+
+    this.time.delayedCall(2000, () => {
+      /*
+      const backgroundColor = "#000000"; // Color code (hexadecimal)
+      const background = this.add
+        .rectangle(0, 0, this.scale.width, this.scale.height, backgroundColor)
+        .setOrigin(0, 0);
+      background.setDepth(1500);
+      */
+
+      const name1 = this.add.text(centerX, centerY, "Game Over", {
+        fontSize: 64,
+        color: "#ff0000",
+      });
+      name1.setOrigin(0.5);
+      name1.setDepth(2000);
+    });
+    this.time.delayedCall(3000, () => {
+      this.scene.pause();
+    });
+  }
+
   hitEnemy(player, enemy) {
     if (enemy.stunned || !this.isAttacking) {
       // If attack is on cooldown or player is not attacking, return early
@@ -200,29 +286,64 @@ class SceneMain extends Phaser.Scene {
     }
 
     console.log(`Hit enemy at (${enemy.x}, ${enemy.y})`);
-
-    // Perform attack logic...
-    this.playAnimation(enemy, "skeletonEnemyHit");
-    enemy.health -= 3;
-
-    // Start attack cooldown
     enemy.stunned = true;
-    this.time.delayedCall(this.attackCooldownDuration, () => {
-      enemy.stunned = false; // Reset attack cooldown flag
-    });
 
-    if (enemy.health <= 0) {
-      // Enemy defeated
-      this.playAnimation(enemy, "skeletonEnemyDeath");
-      Phaser.Utils.Array.Remove(this.skeletonList, enemy);
-      enemy.alive = false;
-      this.player.addXP(200); // add xp after defeating an enemy
-    } else {
-      // Enemy still alive
-      this.time.delayedCall(500, () => {
-        this.playAnimation(enemy, "skeletonEnemyIdle");
+    this.time.delayedCall(500, () => {
+      if (enemy instanceof SkeletonEnemy) {
+        // Perform attack logic...
+
+        this.events.once("update", () => {
+          // Set canDamage to false on the next frame
+          this.playAnimation(enemy, "skeletonEnemyHit");
+          enemy.health -= this.player.damage;
+        });
+
+        // Start attack cooldown
+        //enemy.stunned = true;
+        //this.time.delayedCall(this.attackCooldownDuration, () => {
+        //enemy.stunned = false; // Reset attack cooldown flag
+        //});
+
+        if (enemy.health <= 0) {
+          // Enemy defeated
+          this.time.delayedCall(50, () => {
+            this.playAnimation(enemy, "skeletonEnemyDeath");
+          });
+          Phaser.Utils.Array.Remove(this.skeletonList, enemy);
+          enemy.alive = false;
+          this.player.addXP(200); // add xp after defeating an enemy
+        } else {
+          // Enemy still alive
+          this.time.delayedCall(400, () => {
+            this.playAnimation(enemy, "skeletonEnemyIdle");
+          });
+        }
+      }
+
+      if (enemy instanceof BatEnemy) {
+        this.playAnimation(enemy, "batEnemyTakeHit");
+        enemy.health -= this.player.damage;
+
+        //enemy.stunned = true;
+        this.time.delayedCall(this.attackCooldownDuration, () => {
+          // enemy.stunned = false;
+        });
+
+        if (enemy.health <= 0) {
+          this.playAnimation(enemy, "batEnemyDeath"); //Death animation
+          Phaser.Utils.Array.Remove(this.batList, enemy);
+          enemy.alive = false;
+          this.player.addXP(50);
+        } else {
+          this.time.delayedCall(500, () => {
+            this.playAnimation(enemy, "batEnemyFlight");
+          });
+        }
+      }
+      this.time.delayedCall(this.player.attackSpeed, () => {
+        enemy.stunned = false;
       });
-    }
+    });
   }
 
   create() {
@@ -244,12 +365,6 @@ class SceneMain extends Phaser.Scene {
       this.calculateEnemySpawningPoints(8);
     });
 
-    this.clock = this.time.addEvent({
-      delay: 2000, // 2000 milliseconds = 2 seconds
-      callback: this.playerAttack,
-      callbackScope: this,
-      loop: true, // Repeat indefinitely
-    });
     /*
     this.anims.create({
       key: "sprWater",
@@ -321,6 +436,30 @@ class SceneMain extends Phaser.Scene {
       this
     );
 
+    this.physics.add.overlap(
+      this.hitbox,
+      this.batList,
+      this.hitEnemy,
+      null,
+      this
+    );
+
+    this.physics.add.overlap(
+      this.batList,
+      this.player,
+      this.hitPlayer,
+      null,
+      this
+    );
+
+    this.physics.add.overlap(
+      this.skeletonList,
+      this.player,
+      this.hitPlayer,
+      null,
+      this
+    );
+
     this.anims.create({
       key: "playerIdle",
       frames: this.anims.generateFrameNumbers("playerIdle", {
@@ -329,6 +468,15 @@ class SceneMain extends Phaser.Scene {
       }),
       frameRate: 12,
       repeat: -1,
+    });
+
+    this.anims.create({
+      key: "playerDeath",
+      frames: this.anims.generateFrameNumbers("playerDeath", {
+        start: 0,
+        end: 10,
+      }),
+      frameRate: 12,
     });
 
     this.anims.create({
@@ -400,19 +548,78 @@ class SceneMain extends Phaser.Scene {
       repeat: -1,
     });
 
+    this.anims.create({
+      key: "batEnemyTakeHit",
+      frames: this.anims.generateFrameNumbers("batEnemyTakeHit", {
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 12,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "batEnemyDeath",
+      frames: this.anims.generateFrameNumbers("batEnemyDeath", {
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 12,
+    });
+
+    this.spawnEnemies();
+
     this.time.addEvent({
-      delay: 1000,
-      callback: this.spawnEnemies,
+      delay: 60000,
+      callback: () => {
+        this.spawnBats = true;
+      },
+      callBackScope: this,
+      loop: false,
+    });
+
+    this.time.addEvent({
+      delay: 30000,
+      callback: this.updateSpawnConditions,
       callbackScope: this,
       loop: true,
     });
 
+    this.tempLevel = this.player.level;
+    this.createAttackLoop();
+
     //this.spawnEnemy;
   }
 
+  updateSpawnConditions() {
+    if (this.spawnLoop) {
+      this.spawnLoop.remove(false);
+    }
+
+    if (this.spawnBats) {
+      this.spawnBatAmount++;
+    }
+    this.spawnSkeletonAmount++;
+    this.spawnRate -= 200;
+
+    this.spawnLoop = this.time.addEvent({
+      delay: this.spawnRate,
+      callback: this.spawnEnemies,
+      callbackScope: this,
+      loop: true,
+    });
+  }
+
   spawnEnemies() {
-    this.spawnSkeleton();
-    //this.spawnBat();
+    for (let i = 0; i < this.spawnSkeletonAmount; i++) {
+      this.spawnSkeleton();
+    }
+
+    if (this.spawnBats) {
+      for (let i = 0; i < this.spawnSkeletonAmount; i++) {
+        this.spawnBat();
+      }
+    }
   }
 
   SkeletonAI(enemy, player) {
@@ -452,7 +659,7 @@ class SceneMain extends Phaser.Scene {
       const spawnX = randomPoint.x;
       const spawnY = randomPoint.y;
 
-      const bat = new Bat(this, spawnX, spawnY, "batEnemyFlight");
+      const bat = new BatEnemy(this, spawnX, spawnY, "batEnemyFlight");
       this.playAnimation(bat, "batEnemyFlight");
       bat.setDepth(10);
       this.batList.push(bat);
@@ -495,6 +702,11 @@ class SceneMain extends Phaser.Scene {
   }
 
   update() {
+    if (this.tempLevel < this.player.level) {
+      this.tempLevel = this.player.level;
+      this.createAttackLoop();
+    }
+
     // ensure player have weapon and is enabled
     if (this.player.weaponEnabled && this.player.weapon) {
       this.player.weapon.update();
@@ -587,41 +799,47 @@ class SceneMain extends Phaser.Scene {
     });
 
     //Movement Controller
-    if (this.keyW.isDown) {
-      this.player.y -= this.player.speed;
-    }
-    if (this.keyS.isDown) {
-      this.player.y += this.player.speed;
-    }
-    if (this.keyA.isDown) {
-      this.player.x -= this.player.speed;
-    }
-    if (this.keyD.isDown) {
-      this.player.x += this.player.speed;
-    }
+    if (this.player.health > 0) {
+      if (this.keyW.isDown) {
+        this.player.y -= this.player.speed;
+      }
+      if (this.keyS.isDown) {
+        this.player.y += this.player.speed;
+      }
+      if (this.keyA.isDown) {
+        this.player.x -= this.player.speed;
+      }
+      if (this.keyD.isDown) {
+        this.player.x += this.player.speed;
+      }
 
-    if (this.isAttacking) {
-      return;
+      if (this.isAttacking) {
+        return;
+      }
     }
 
     //Animation Controller
-
-    if (this.keyW.isDown) {
-      this.playAnimation(this.player, "run");
-    } else if (this.keyA.isDown) {
-      this.player.direction = "left";
-      this.player.flipSprite(true);
-      //this.flipSprite(this.player, true);
-      this.playAnimation(this.player, "run");
-    } else if (this.keyS.isDown) {
-      this.playAnimation(this.player, "run");
-    } else if (this.keyD.isDown) {
-      this.player.direction = "right";
-      //this.flipSprite(this.player, false);
-      this.player.flipSprite(false);
-      this.playAnimation(this.player, "run");
+    if (this.player.health > 0) {
+      if (this.keyW.isDown) {
+        this.playAnimation(this.player, "run");
+      } else if (this.keyA.isDown) {
+        this.player.direction = "left";
+        this.player.flipSprite(true);
+        //this.flipSprite(this.player, true);
+        this.playAnimation(this.player, "run");
+      } else if (this.keyS.isDown) {
+        this.playAnimation(this.player, "run");
+      } else if (this.keyD.isDown) {
+        this.player.direction = "right";
+        //this.flipSprite(this.player, false);
+        this.player.flipSprite(false);
+        this.playAnimation(this.player, "run");
+      } else {
+        this.playAnimation(this.player, "playerIdle");
+      }
     } else {
-      this.playAnimation(this.player, "playerIdle");
+      this.playAnimation(this.player, "playerDeath");
+      this.gameOver();
     }
 
     // diplay updated player stats
@@ -629,28 +847,30 @@ class SceneMain extends Phaser.Scene {
   }
 
   playerAttack() {
-    this.isAttacking = true;
+    if (this.player.health > 0) {
+      this.isAttacking = true;
 
-    if (this.player.direction == "right") {
-      this.hitbox.setPosition(this.player.x + 20, this.player.y);
-    } else {
-      this.hitbox.setPosition(this.player.x - 20, this.player.y);
+      if (this.player.direction == "right") {
+        this.hitbox.setPosition(this.player.x + 20, this.player.y);
+      } else {
+        this.hitbox.setPosition(this.player.x - 20, this.player.y);
+      }
+      //this.hitbox.setVisible(true);
+
+      const attackDuration = 500 / this.player.attackSpeed;
+
+      this.time.delayedCall(attackDuration, () => {
+        //this.hitbox.setVisible = false;
+      });
+
+      // Play attack animation with force to override any other animations
+      this.playAnimationOverride(this.player, "attack");
+
+      // Stop attacking after the attack animation finishes
+      this.time.delayedCall(500, () => {
+        this.isAttacking = false; // Reset the attacking flag
+      });
     }
-    //this.hitbox.setVisible(true);
-
-    const attackDuration = 500 / this.player.attackSpeed;
-
-    this.time.delayedCall(attackDuration, () => {
-      //this.hitbox.setVisible = false;
-    });
-
-    // Play attack animation with force to override any other animations
-    this.playAnimationOverride(this.player, "attack");
-
-    // Stop attacking after the attack animation finishes
-    this.time.delayedCall(500, () => {
-      this.isAttacking = false; // Reset the attacking flag
-    });
   }
 
   isAnimationPlaying(sprite, animationKey) {

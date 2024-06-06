@@ -3,6 +3,8 @@ class Bat extends Phaser.GameObjects.Sprite {
     super(scene, x, y, texture);
     scene.add.existing(this);
     scene.physics.add.existing(this);
+    this.name = "bat";
+    this.damage = 1;
     this.health = 2;
     this.speed = 2;
     this.alive = true;

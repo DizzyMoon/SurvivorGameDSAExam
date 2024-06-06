@@ -3,7 +3,9 @@ class Skeleton extends Phaser.GameObjects.Sprite {
     super(scene, x, y, texture);
     scene.add.existing(this);
     scene.physics.add.existing(this);
+    this.name = "skeleton";
     this.health = 10;
+    this.damage = 5;
     this.speed = 0.3;
     this.alive = true;
     this.stunned = false;
