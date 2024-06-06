@@ -406,8 +406,8 @@ class SceneMain extends Phaser.Scene {
   }
 
   spawnEnemies() {
-    //this.spawnSkeleton();
-    this.spawnBat();
+    this.spawnSkeleton();
+    //this.spawnBat();
   }
 
   SkeletonAI(enemy, player) {
