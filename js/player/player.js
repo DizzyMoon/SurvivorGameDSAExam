@@ -20,6 +20,10 @@ class Player extends Phaser.GameObjects.Sprite {
     this.updateStats();
   }
 
+  addItem(item) {
+    this.items.push(item);
+  }
+
   flipSprite(flipX) {
     this.setScale(flipX ? -1 : 1, 1);
     // Adjust the hitbox offset to keep it in place
@@ -38,7 +42,10 @@ class Player extends Phaser.GameObjects.Sprite {
   // level up player
   checkLevelUp() {
     const newLevel = Math.floor(this.xp / this.xpToLevelUp) + 1;
+    this.scene.scene.launch("sceneLevelUp", { playerData: this });
+    this.scene.scene.pause();
     if (newLevel > this.level) {
+      this.scene.scene.pause();
       this.level = newLevel;
       this.updateStats();
     }
@@ -70,6 +77,8 @@ class Player extends Phaser.GameObjects.Sprite {
   getLevel() {
     return this.level;
   }
+
+  addModifiers(item) {}
 }
 
 export default Player;

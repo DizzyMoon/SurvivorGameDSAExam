@@ -9,6 +9,18 @@ canvas {
   background-color: rgb(87, 103, 86);
 }
 
+body {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+#boid-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
 #player-stats {
   position: absolute;
   top: 20%;

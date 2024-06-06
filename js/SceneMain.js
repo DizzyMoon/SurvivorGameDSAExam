@@ -2,10 +2,23 @@ import SkeletonEnemy from "./enemy/skeletonEnemy.js";
 import { Chunk, Tile } from "./entities.js";
 import Player from "./player/player.js";
 import Bat from "./enemy/batEnemy.js";
+import BerserkersGloves from "./item/berserkers_gloves.js";
+import MithrilMail from "./item/mithril_mail.js";
+import FiasBlessing from "./item/fias_blessing.js";
+import LightningGrieves from "./item/lightning_grieves.js";
 
 class SceneMain extends Phaser.Scene {
   constructor() {
     super({ key: "SceneMain" });
+    this.preloadKeys = [];
+
+    this.itemPool = [
+      new BerserkersGloves(),
+      new FiasBlessing(),
+      new LightningGrieves(),
+      new MithrilMail(),
+    ];
+
     this.isAttacking = false;
     this.skeletonList = [];
     this.batList = [];
@@ -21,6 +34,8 @@ class SceneMain extends Phaser.Scene {
     const { health, xp, xpToLevelUp, speed, attackSpeed, items } = this.player;
     const level = this.player.getLevel();
 
+    const itemNames = items.map((item) => item.name + ": Level " + item.level);
+
     document.getElementById("health").innerText = `Health: ${health}`;
     document.getElementById("xp").innerText = `XP: ${xp} / ${xpToLevelUp}`;
     document.getElementById("level").innerText = `Level: ${level}`;
@@ -29,7 +44,7 @@ class SceneMain extends Phaser.Scene {
       "attack-speed"
     ).innerText = `Attack Speed: ${attackSpeed}`;
     document.getElementById("items").innerText = `Items: ${
-      items.length ? items.join(", ") : ""
+      items.length ? itemNames.join(", ") : ""
     }`;
   }
 
@@ -93,9 +108,24 @@ class SceneMain extends Phaser.Scene {
   }
 
   preload() {
+    this.itemPool.forEach((item) => {
+      this.load.spritesheet(item.iconName, item.icon, {
+        frameWidth: 48,
+        frameHeight: 48,
+      });
+
+      this.preloadKeys.push(item.iconName);
+    });
+
     this.load.image("sprDirt", "content/tiles/dirt.png");
+    this.preloadKeys.push("sprDirt");
+
     this.load.image("sprGrass", "content/tiles/grass.png");
+    this.preloadKeys.push("sprGrass");
+
     this.load.image("sprFlowers", "content/tiles/flowers.png");
+    this.preloadKeys.push("sprFlowers");
+
     this.load.spritesheet("playerIdle", "content/player/Idle.png", {
       frameWidth: 180,
       frameHeight: 180,
@@ -191,6 +221,8 @@ class SceneMain extends Phaser.Scene {
   }
 
   create() {
+    //Initialize item pool
+
     //this.physics.world.debugDrawBody = true;
 
     this.enemyCollisionGroup = this.physics.add.group();
@@ -226,6 +258,15 @@ class SceneMain extends Phaser.Scene {
 
     const centerX = this.cameras.main.width / 2;
     const centerY = this.cameras.main.height / 2;
+
+    /*
+    const gloves = this.add.sprite(centerX, centerY, "berserkersGloves");
+    gloves.setDepth(100);
+    gloves.setInteractive();
+    gloves.on("pointerdown", () => {
+      console.log("You clicked the gloves");
+    });
+    */
 
     this.chunkSize = 16;
     this.tileSize = 16;
@@ -356,12 +397,17 @@ class SceneMain extends Phaser.Scene {
 
     this.time.addEvent({
       delay: 1000,
-      callback: this.spawnBat,
+      callback: this.spawnEnemies,
       callbackScope: this,
       loop: true,
     });
 
     //this.spawnEnemy;
+  }
+
+  spawnEnemies() {
+    //this.spawnSkeleton();
+    this.spawnBat();
   }
 
   SkeletonAI(enemy, player) {
@@ -393,7 +439,7 @@ class SceneMain extends Phaser.Scene {
   }
 
   spawnBat() {
-    if (this.batList.length < 100) {
+    if (this.batList.length < 10) {
       const randomPoint = Phaser.Utils.Array.GetRandom(
         this.enemySpawningPointsContainer.list
       );
@@ -419,7 +465,71 @@ class SceneMain extends Phaser.Scene {
     return chunk;
   }
 
+  toggleRuleOfAlignment(on) {
+    if (on) {
+      this.batList.forEach((bat) => {
+        bat.ruleOfAlignMentOn = true;
+      });
+    } else {
+      this.batList.forEach((bat) => {
+        bat.ruleOfAlignMentOn = false;
+      });
+    }
+  }
+
+  toggleRuleOfSeperation(on) {
+    if (on) {
+      this.batList.forEach((bat) => {
+        bat.ruleOfSeparationOn = true;
+      });
+    } else {
+      this.batList.forEach((bat) => {
+        bat.ruleOfSeparationOn = false;
+      });
+    }
+  }
+
+  toggleRuleOfCohesion(on) {
+    if (on) {
+      this.batList.forEach((bat) => {
+        bat.ruleOfCohesionOn = true;
+      });
+    } else {
+      this.batList.forEach((bat) => {
+        bat.ruleOfCohesionOn = false;
+      });
+    }
+  }
+
   update() {
+    const ruleOfAlignMent = document.getElementById("rule-of-alignment");
+    const ruleOfSeparation = document.getElementById("rule-of-seperation");
+    const ruleOfCohesion = document.getElementById("rule-of-cohesion");
+
+    ruleOfAlignMent.addEventListener("change", () => {
+      if (ruleOfAlignMent.checked) {
+        this.toggleRuleOfAlignment(true);
+      } else {
+        this.toggleRuleOfAlignment(false);
+      }
+    });
+
+    ruleOfSeparation.addEventListener("change", () => {
+      if (ruleOfSeparation.checked) {
+        this.toggleRuleOfSeperation(true);
+      } else {
+        this.toggleRuleOfSeperation(false);
+      }
+    });
+
+    ruleOfCohesion.addEventListener("change", () => {
+      if (ruleOfCohesion.checked) {
+        this.toggleRuleOfCohesion(true);
+      } else {
+        this.toggleRuleOfCohesion(false);
+      }
+    });
+
     this.calculateEnemySpawningPoints(8);
 
     var snappedChunkX =
