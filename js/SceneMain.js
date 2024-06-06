@@ -499,9 +499,7 @@ class SceneMain extends Phaser.Scene {
       this.weapon.update();
     }
 
-    
-
-    const ruleOfAlignMent = document.getElementById("rule-of-alignment");
+    const ruleOfAlignment = document.getElementById("rule-of-alignment");
     const ruleOfSeparation = document.getElementById("rule-of-seperation");
     const ruleOfCohesion = document.getElementById("rule-of-cohesion");
     const followPlayerCheckbox = document.getElementById(

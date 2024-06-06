@@ -36,7 +36,6 @@ class Weapon {
     this.graphics.strokeCircle(this.player.x, this.player.y, this.radius);
 
     this.hitbox.setPosition(this.player.x, this.player.y);
-    console.log(`Player position: (${this.player.x}, ${this.player.y}), Hitbox position: (${this.hitbox.x}, ${this.hitbox.y})`);
   }
 
   dealDamage() {
@@ -48,7 +47,6 @@ class Weapon {
 
   applyDamage(hitbox, enemy) {
     if (!enemy.stunned) {
-      console.log(`Dealing damage to enemy at (${enemy.x}, ${enemy.y})`);
       enemy.health -= 1;
       this.scene.playAnimation(enemy, "skeletonEnemyHit");
 
