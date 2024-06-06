@@ -439,7 +439,7 @@ class SceneMain extends Phaser.Scene {
   }
 
   spawnBat() {
-    if (this.batList.length < 10) {
+    if (this.batList.length < 30) {
       const randomPoint = Phaser.Utils.Array.GetRandom(
         this.enemySpawningPointsContainer.list
       );
