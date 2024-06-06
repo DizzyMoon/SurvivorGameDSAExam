@@ -4,9 +4,12 @@ class Bat extends Phaser.GameObjects.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.health = 2;
-    this.speed = 0.6;
+    this.speed = 2;
     this.alive = true;
     this.stunned = false;
+    this.ruleOfAlignmentOn = true;
+    this.ruleOfSeparationOn = true;
+    this.ruleOfCohesionOn = true;
     this.turnSpeed = 0.03;
     this.body.setSize(30, 60);
     this.maxSpeed = 2; // Max speed to avoid excessive speeds
@@ -94,10 +97,17 @@ class Bat extends Phaser.GameObjects.Sprite {
 
   updatePosition(steerSeparation, steerAlignment, steerCohesion, steerPlayer) {
     let acceleration = new Phaser.Math.Vector2(0, 0);
-    acceleration.add(steerSeparation.scale(10)); // Increase separation force
-    acceleration.add(steerAlignment);
-    acceleration.add(steerCohesion);
-    acceleration.add(steerPlayer);
+
+    if (this.ruleOfSeparation) {
+      acceleration.add(steerSeparation.scale(10)); // Increase separation force
+    }
+    if (this.ruleOfAlignMent) {
+      acceleration.add(steerAlignment);
+    }
+    if (this.ruleOfCohesion) {
+      acceleration.add(steerCohesion);
+    }
+    //acceleration.add(steerPlayer);
 
     if (acceleration.length() > this.turnSpeed) {
       acceleration = acceleration.normalize().scale(this.turnSpeed);

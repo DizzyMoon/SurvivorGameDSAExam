@@ -21,10 +21,29 @@
       <canvas id="game-canvas"></canvas>
     </div>
 
+    <div id="boid-toggles">
+      <label class="switch">
+        Seperation
+        <input id="rule-of-seperation" type="checkbox" />
+        <span class="slider"></span>
+      </label>
+      <label class="switch">
+        Alignment
+        <input id="rule-of-alignment" type="checkbox" />
+        <span class="slider"></span>
+      </label>
+      <label class="switch">
+        Cohesion
+        <input id="rule-of-cohesion" type="checkbox" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
     <script src="js/phaser.js"></script>
     <script src="js/noisejs-master/perlin.js"></script>
     <script src="js/entities.js" type="module"></script>
     <script src="js/SceneMain.js" type="module"></script>
     <script src="js/game.js" type="module"></script>
+    <script src="js/SceneLevelUp.js" type="module"></script>
   </body>
 </html>

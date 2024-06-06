@@ -1,4 +1,5 @@
 import SceneMain from "./SceneMain.js";
+import SceneLevelUp from "./SceneLevelUp.js";
 
 var config = {
   type: Phaser.WEBGL,
@@ -12,7 +13,7 @@ var config = {
       Gravity: { x: 0, y: 0 },
     },
   },
-  scene: [SceneMain],
+  scene: [SceneMain, SceneLevelUp],
   pixelArt: true,
   roundPixels: true,
 };
