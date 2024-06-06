@@ -6,6 +6,7 @@ import BerserkersGloves from "./item/berserkers_gloves.js";
 import MithrilMail from "./item/mithril_mail.js";
 import FiasBlessing from "./item/fias_blessing.js";
 import LightningGrieves from "./item/lightning_grieves.js";
+import Weapon from "./player/weapon.js";
 
 class SceneMain extends Phaser.Scene {
   constructor() {
@@ -194,7 +195,7 @@ class SceneMain extends Phaser.Scene {
       return;
     }
 
-    console.log();
+    console.log(`Hit enemy at (${enemy.x}, ${enemy.y})`);
 
     // Perform attack logic...
     this.playAnimation(enemy, "skeletonEnemyHit");
@@ -298,6 +299,9 @@ class SceneMain extends Phaser.Scene {
 
     this.player = new Player(this, centerX, centerY, "playerIdle");
     this.player.setDepth(10);
+
+    // Create the weapon
+    this.weapon = new Weapon(this, this.player, 200);
 
     //Setup player attack hitbox
     this.hitbox = this.physics.add
@@ -502,6 +506,13 @@ class SceneMain extends Phaser.Scene {
   }
 
   update() {
+    // ensure weapon follows the player
+    if (this.weapon) {
+      this.weapon.update();
+    }
+
+    
+
     const ruleOfAlignMent = document.getElementById("rule-of-alignment");
     const ruleOfSeparation = document.getElementById("rule-of-seperation");
     const ruleOfCohesion = document.getElementById("rule-of-cohesion");
