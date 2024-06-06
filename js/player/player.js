@@ -14,7 +14,7 @@ class Player extends Phaser.GameObjects.Sprite {
     this.baseDamage = 3;
     this.damageModifier;
     this.damage = this.baseDamage;
-    this.baseSpeed = 3;
+    this.baseSpeed = 1.3;
     this.speedModifier;
     this.speed = this.baseSpeed;
     //this.speed = 1.3;
