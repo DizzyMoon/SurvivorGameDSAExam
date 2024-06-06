@@ -10,6 +10,7 @@ class Bat extends Phaser.GameObjects.Sprite {
     this.ruleOfAlignmentOn = true;
     this.ruleOfSeparationOn = true;
     this.ruleOfCohesionOn = true;
+    this.followPlayerOn = true;
     this.turnSpeed = 0.03;
     this.body.setSize(30, 60);
     this.maxSpeed = 2; // Max speed to avoid excessive speeds
@@ -40,7 +41,7 @@ class Bat extends Phaser.GameObjects.Sprite {
   }
 
   ruleOfAlignment(bats) {
-    const neighborDist = 100; // Larger radius for alignment
+    const neighborDist = 150; // Larger radius for alignment
     let sum = new Phaser.Math.Vector2(0, 0);
     let count = 0;
 
@@ -65,7 +66,7 @@ class Bat extends Phaser.GameObjects.Sprite {
   }
 
   ruleOfCohesion(bats) {
-    const neighborDist = 100; // Same as alignment
+    const neighborDist = 150; // Same as alignment
     let sum = new Phaser.Math.Vector2(0, 0);
     let count = 0;
 
@@ -98,16 +99,11 @@ class Bat extends Phaser.GameObjects.Sprite {
   updatePosition(steerSeparation, steerAlignment, steerCohesion, steerPlayer) {
     let acceleration = new Phaser.Math.Vector2(0, 0);
 
-    if (this.ruleOfSeparation) {
-      acceleration.add(steerSeparation.scale(10)); // Increase separation force
-    }
-    if (this.ruleOfAlignMent) {
-      acceleration.add(steerAlignment);
-    }
-    if (this.ruleOfCohesion) {
-      acceleration.add(steerCohesion);
-    }
-    //acceleration.add(steerPlayer);
+    acceleration.add(steerSeparation.scale(30)); // Increase separation force
+    acceleration.add(steerAlignment);
+    acceleration.add(steerCohesion);
+
+    acceleration.add(steerPlayer);
 
     if (acceleration.length() > this.turnSpeed) {
       acceleration = acceleration.normalize().scale(this.turnSpeed);
@@ -123,10 +119,23 @@ class Bat extends Phaser.GameObjects.Sprite {
   }
 
   boids(bats, player) {
-    const steerSeparation = this.ruleOfSeparation(bats);
-    const steerAlignment = this.ruleOfAlignment(bats);
-    const steerCohesion = this.ruleOfCohesion(bats);
-    const steerPlayer = this.steerTowardsPlayer(player);
+    let steerSeparation = new Phaser.Math.Vector2(0, 0);
+    let steerAlignment = new Phaser.Math.Vector2(0, 0);
+    let steerCohesion = new Phaser.Math.Vector2(0, 0);
+    let steerPlayer = new Phaser.Math.Vector2(0, 0);
+
+    if (this.ruleOfSeparationOn) {
+      steerSeparation = this.ruleOfSeparation(bats);
+    }
+    if (this.ruleOfAlignmentOn) {
+      steerAlignment = this.ruleOfAlignment(bats);
+    }
+    if (this.ruleOfCohesionOn) {
+      steerCohesion = this.ruleOfCohesion(bats);
+    }
+    if (this.followPlayerOn) {
+      steerPlayer = this.steerTowardsPlayer(player);
+    }
 
     this.updatePosition(
       steerSeparation,

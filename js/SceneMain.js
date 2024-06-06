@@ -470,39 +470,27 @@ class SceneMain extends Phaser.Scene {
   }
 
   toggleRuleOfAlignment(on) {
-    if (on) {
-      this.batList.forEach((bat) => {
-        bat.ruleOfAlignMentOn = true;
-      });
-    } else {
-      this.batList.forEach((bat) => {
-        bat.ruleOfAlignMentOn = false;
-      });
-    }
+    this.batList.forEach((bat) => {
+      on ? (bat.ruleOfAlignmentOn = true) : (bat.ruleOfAlignmentOn = false);
+    });
   }
 
   toggleRuleOfSeperation(on) {
-    if (on) {
-      this.batList.forEach((bat) => {
-        bat.ruleOfSeparationOn = true;
-      });
-    } else {
-      this.batList.forEach((bat) => {
-        bat.ruleOfSeparationOn = false;
-      });
-    }
+    this.batList.forEach((bat) => {
+      on ? (bat.ruleOfSeparationOn = true) : (bat.ruleOfSeparationOn = false);
+    });
   }
 
   toggleRuleOfCohesion(on) {
-    if (on) {
-      this.batList.forEach((bat) => {
-        bat.ruleOfCohesionOn = true;
-      });
-    } else {
-      this.batList.forEach((bat) => {
-        bat.ruleOfCohesionOn = false;
-      });
-    }
+    this.batList.forEach((bat) => {
+      on ? (bat.ruleOfCohesionOn = true) : (bat.ruleOfCohesionOn = false);
+    });
+  }
+
+  toggleFollowPlayer(on) {
+    this.batList.forEach((bat) => {
+      on ? (bat.followPlayerOn = true) : (bat.followPlayerOn = false);
+    });
   }
 
   update() {
@@ -516,29 +504,32 @@ class SceneMain extends Phaser.Scene {
     const ruleOfAlignMent = document.getElementById("rule-of-alignment");
     const ruleOfSeparation = document.getElementById("rule-of-seperation");
     const ruleOfCohesion = document.getElementById("rule-of-cohesion");
+    const followPlayerCheckbox = document.getElementById(
+      "follow-player-toggle"
+    );
 
-    ruleOfAlignMent.addEventListener("change", () => {
-      if (ruleOfAlignMent.checked) {
-        this.toggleRuleOfAlignment(true);
-      } else {
-        this.toggleRuleOfAlignment(false);
-      }
+    ruleOfAlignment.addEventListener("change", () => {
+      ruleOfAlignment.checked
+        ? this.toggleRuleOfAlignment(true)
+        : this.toggleRuleOfAlignment(false);
     });
 
     ruleOfSeparation.addEventListener("change", () => {
-      if (ruleOfSeparation.checked) {
-        this.toggleRuleOfSeperation(true);
-      } else {
-        this.toggleRuleOfSeperation(false);
-      }
+      ruleOfSeparation.checked
+        ? this.toggleRuleOfSeperation(true)
+        : this.toggleRuleOfSeperation(false);
     });
 
     ruleOfCohesion.addEventListener("change", () => {
-      if (ruleOfCohesion.checked) {
-        this.toggleRuleOfCohesion(true);
-      } else {
-        this.toggleRuleOfCohesion(false);
-      }
+      ruleOfCohesion.checked
+        ? this.toggleRuleOfCohesion(true)
+        : this.toggleRuleOfCohesion(false);
+    });
+
+    followPlayerCheckbox.addEventListener("change", () => {
+      followPlayerCheckbox.checked
+        ? this.toggleFollowPlayer(true)
+        : this.toggleFollowPlayer(false);
     });
 
     this.calculateEnemySpawningPoints(8);
