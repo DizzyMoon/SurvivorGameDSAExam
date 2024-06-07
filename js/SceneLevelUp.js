@@ -41,11 +41,15 @@ class SceneLevelUp extends Phaser.Scene {
 
   handleItemChoice(item, player) {
     if (item instanceof LightningSpell) {
-      let existingItem = this.player.items.find(i => i.name === item.name);
+      let existingItem = this.player.items.find((i) => i.name === item.name);
       if (!existingItem) {
         this.player.addItem(item);
         const initialRadius = 50; // level 1 radius 50
-        const weapon = new Weapon(this.scene.get("SceneMain"), this.player, initialRadius);
+        const weapon = new Weapon(
+          this.scene.get("SceneMain"),
+          this.player,
+          initialRadius
+        );
         this.player.addWeapon(weapon);
         this.player.enableWeapon();
       }
@@ -58,7 +62,7 @@ class SceneLevelUp extends Phaser.Scene {
         }
       }
     } else {
-      let existingItem = player.items.find(i => i.name === item.name);
+      let existingItem = player.items.find((i) => i.name === item.name);
       if (existingItem) {
         existingItem.level++;
       } else {
@@ -100,6 +104,12 @@ class SceneLevelUp extends Phaser.Scene {
       console.log("You clicked the " + item1.name);
     });
 
+    const banner = this.add.text(centerX, centerY - 150, "Level Up!", {
+      fontSize: 64,
+    });
+    banner.setDepth(1000);
+    banner.setOrigin(0.5);
+
     const name1 = this.add.text(centerX, centerY + 50, item1.name);
     name1.setOrigin(0.5);
     const description1 = this.add.text(
@@ -110,6 +120,7 @@ class SceneLevelUp extends Phaser.Scene {
         fontSize: 13,
       }
     );
+
     description1.setOrigin(0.5);
 
     const sprite2 = this.add.sprite(centerX + 200, centerY, item2.iconName);
@@ -153,7 +164,7 @@ class SceneLevelUp extends Phaser.Scene {
     description3.setOrigin(0.5);
   }
 
-  update() { }
+  update() {}
 }
 
 export default SceneLevelUp;
